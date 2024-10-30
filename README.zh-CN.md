@@ -87,7 +87,7 @@ mac-vim-switch list
 # 设置主输入法（默认：com.apple.keylayout.ABC）
 mac-vim-switch config primary "com.apple.keylayout.ABC"
 
-# 设置第二输入法
+# 设置第二输入法, 使用 `macism` 查看当前输入法
 mac-vim-switch config secondary "your.input.method.id"
 ```
 

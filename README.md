@@ -87,7 +87,7 @@ mac-vim-switch list
 # Set primary input method (default: com.apple.keylayout.ABC)
 mac-vim-switch config primary "com.apple.keylayout.ABC"
 
-# Set secondary input method
+# Set secondary input method (default: com.tencent.inputmethod.wetype.pinyin, use `macism` to get current input method)
 mac-vim-switch config secondary "your.input.method.id"
 ```
 

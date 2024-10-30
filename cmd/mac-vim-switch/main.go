@@ -101,7 +101,7 @@ func loadConfig() error {
 	configDir := filepath.Join(homeDir, ".config", "mac-vim-switch")
 	configFile := filepath.Join(configDir, "config.json")
 
-	// 如果配置文件不存在，创建默认配置
+	// 如果配置文件���存在，创建默认配置
 	if _, err := os.Stat(configFile); os.IsNotExist(err) {
 		if err := os.MkdirAll(configDir, 0755); err != nil {
 			return err
@@ -256,12 +256,6 @@ func goCallback(event C.CGEventRef, eventType C.CGEventType, keyCode C.CGKeyCode
 	log.Printf("Key Event: type=%s, keyCode=0x%x, flags=0x%x\n",
 		eventTypeStr, keyCode, flags)
 
-	// 如果是普通按键事件（非修饰键），重置 shift 状态
-	if eventType == C.kCGEventKeyDown {
-		shiftPressed = false
-		return
-	}
-
 	switch keyCode {
 	case 0x35: // ESC
 		if eventType == C.kCGEventKeyDown {
@@ -270,6 +264,16 @@ func goCallback(event C.CGEventRef, eventType C.CGEventType, keyCode C.CGKeyCode
 				log.Printf("Error switching to primary input method: %v\n", err)
 			}
 		}
+		return
+	}
+
+	// 如果是普通按键事件（非修饰键），重置 shift 状态
+	if eventType == C.kCGEventKeyDown {
+		shiftPressed = false
+		return
+	}
+
+	switch keyCode {
 	case 0x38, 0x3C: // Left or Right Shift
 		if eventType == 12 { // FlagsChanged event
 			isShiftDown := flags&C.kCGEventFlagMaskShift != 0
