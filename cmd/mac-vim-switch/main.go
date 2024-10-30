@@ -256,6 +256,12 @@ func goCallback(event C.CGEventRef, eventType C.CGEventType, keyCode C.CGKeyCode
 	log.Printf("Key Event: type=%s, keyCode=0x%x, flags=0x%x\n",
 		eventTypeStr, keyCode, flags)
 
+	// 如果是普通按键事件（非修饰键），重置 shift 状态
+	if eventType == C.kCGEventKeyDown {
+		shiftPressed = false
+		return
+	}
+
 	switch keyCode {
 	case 0x35: // ESC
 		if eventType == C.kCGEventKeyDown {
@@ -265,48 +271,45 @@ func goCallback(event C.CGEventRef, eventType C.CGEventType, keyCode C.CGKeyCode
 			}
 		}
 	case 0x38, 0x3C: // Left or Right Shift
-		// 检查是否是单独的 Shift 键事件
-		if flags&(C.kCGEventFlagMaskCommand|C.kCGEventFlagMaskControl|C.kCGEventFlagMaskAlternate) == 0 {
+		if eventType == 12 { // FlagsChanged event
 			isShiftDown := flags&C.kCGEventFlagMaskShift != 0
-			log.Printf("Shift state changed - isDown: %v\n", isShiftDown)
+			hasOtherModifiers := (flags & (C.kCGEventFlagMaskCommand |
+				C.kCGEventFlagMaskControl |
+				C.kCGEventFlagMaskAlternate |
+				C.kCGEventFlagMaskSecondaryFn)) != 0
 
-			if eventType == 12 { // FlagsChanged event
-				if isShiftDown && !shiftPressed {
-					// Shift 被按下
-					log.Printf("Shift pressed down\n")
+			log.Printf("Shift state changed - isDown: %v, hasOtherModifiers: %v, flags: 0x%x\n",
+				isShiftDown, hasOtherModifiers, flags)
+
+			if hasOtherModifiers {
+				shiftPressed = false
+				return
+			}
+
+			if isShiftDown {
+				if !shiftPressed {
 					shiftPressed = true
 					lastShiftPressTime = now
-				} else if !isShiftDown && shiftPressed {
-					// Shift 被释放
-					log.Printf("Shift released\n")
-					shiftPressed = false
+				}
+			} else if shiftPressed {
+				shiftPressed = false
+				if now-lastShiftPressTime < 300*1000000 { // 300ms
+					current, err := getCurrentInputMethod()
+					if err != nil {
+						log.Printf("Error getting current input method: %v\n", err)
+						return
+					}
 
-					// 如果按下时间小于 300ms，则切换输入法
-					if now-lastShiftPressTime < 300*1000000 { // 300ms
-						log.Println("Quick Shift press detected, switching input method")
-						current, err := getCurrentInputMethod()
-						if err != nil {
-							log.Printf("Error getting current input method: %v\n", err)
-							return
-						}
-						log.Printf("Current input method: %s\n", current)
+					targetIM := config.SecondaryIM
+					if current == config.SecondaryIM {
+						targetIM = config.PrimaryIM
+					}
 
-						targetIM := config.PrimaryIM
-						if current == config.PrimaryIM {
-							targetIM = config.SecondaryIM
-						}
-
-						log.Printf("Switching to input method: %s\n", targetIM)
-						if err := switchToInputMethod(targetIM); err != nil {
-							log.Printf("Error switching input method: %v\n", err)
-						}
-					} else {
-						log.Printf("Shift press too long: %dms\n", (now-lastShiftPressTime)/1000000)
+					if err := switchToInputMethod(targetIM); err != nil {
+						log.Printf("Error switching input method: %v\n", err)
 					}
 				}
 			}
-		} else {
-			log.Printf("Shift pressed with modifiers (flags: %d), ignoring\n", flags)
 		}
 	}
 }
@@ -336,7 +339,6 @@ func main() {
 			return
 		case "config":
 			if len(os.Args) == 2 {
-				// 显示当前配置
 				fmt.Printf("Current configuration:\n")
 				fmt.Printf("Primary input method: %s\n", config.PrimaryIM)
 				fmt.Printf("Secondary input method: %s\n", config.SecondaryIM)
