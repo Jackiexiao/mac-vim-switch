@@ -1,5 +1,11 @@
 # mac-vim-switch
 
+> [!NOTE]
+> This project is no longer maintained.
+> Because high latency when switching input methods,
+> I recommend using [MacVimSwitch](https://github.com/jackiexiao/macvimswitch) instead. not mac-vim-switch.
+
+[中文版](README.zh-CN.md)
 A macOS input method switcher designed for Vim users, built on top of macism.
 
 ## Features
@@ -18,7 +24,7 @@ A macOS input method switcher designed for Vim users, built on top of macism.
 
 ```bash
 # Install macism first
-brew tap laishulu/macism
+brew tap laishulu/homebrew
 brew install macism
 
 # Install mac-vim-switch

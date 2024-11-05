@@ -1,5 +1,9 @@
 # mac-vim-switch
 
+> [!NOTE]
+> 这个仓库不再维护，因为切换中文输入法时有较高的延迟
+> 推荐使用 [MacVimSwitch](https://github.com/jackiexiao/macvimswitch) 代替 mac-vim-switch
+
 一个为 Vim 用户设计的 macOS 输入法切换工具，基于 macism 开发。
 
 ## 功能特性
@@ -18,7 +22,7 @@
 
 ```bash
 # 首先安装 macism
-brew tap laishulu/macism
+brew tap laishulu/homebrew
 brew install macism
 
 # 安装 mac-vim-switch
